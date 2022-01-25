@@ -6,8 +6,8 @@ app = Flask(__name__)
 @app.route('/', methods=['GET'])
 def getPlayitasPrices():
     args = request.args
-    oneMax = args.get("OneMax", default=0, type=int)
-    twoMax = args.get("TwoMax", default=0, type=int)
+    oneMax = args.get("MaxPrice7", default=0, type=int)
+    twoMax = args.get("MaxPrice14", default=0, type=int)
     prices = []
     if oneMax != 0:
         prices += getPrices("2022", "7", "CPH", oneMax)
@@ -25,6 +25,8 @@ def getPlayitasPrices():
     return res
 
 def PrettyStringPrices(travelPrices):
+    if len(travelPrices == 0):
+      return "No interesting travels"
     res = ""
     for travelPrice in travelPrices:
         res += f"Airport: {travelPrice['Airport']} | Duration: {travelPrice['Duration']:2} | Date: {travelPrice['Date'][0:10]} | CheapestPrice: {travelPrice['CheapestPrice']:5} DKK | Hotel: {travelPrice['Hotel']}<br>"
