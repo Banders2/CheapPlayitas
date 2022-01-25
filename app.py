@@ -25,7 +25,7 @@ def getPlayitasPrices():
     return res
 
 def PrettyStringPrices(travelPrices):
-    if len(travelPrices == 0):
+    if len(travelPrices) == 0:
       return "No interesting travels"
     res = ""
     for travelPrice in travelPrices:
