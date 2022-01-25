@@ -21,7 +21,7 @@ def getPlayitasPrices():
         prices += getPrices("2023", "14", "BLL", twoMax)
 
     sortedPrices = SortPrices(prices)
-    res = PrettyStringPrices(sortedPrices)
+    res = PrettyHtmlPrices(sortedPrices)
     return res
 
 def PrettyStringPrices(travelPrices):
@@ -30,6 +30,57 @@ def PrettyStringPrices(travelPrices):
     res = ""
     for travelPrice in travelPrices:
         res += f"Airport: {travelPrice['Airport']} | Duration: {travelPrice['Duration']:2} | Date: {travelPrice['Date'][0:10]} | CheapestPrice: {travelPrice['CheapestPrice']:5} DKK | Hotel: {travelPrice['Hotel']}<br>"
+    return res
+
+def PrettyHtmlPrices(travelPrices):
+    if len(travelPrices) == 0:
+      return "No interesting travels"
+    res = """
+    <html>
+    <head>
+    <style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+    </style>
+    </head>
+    <body>
+    <table>
+      <tr>
+        <th>Airport</th>
+        <th>Duration</th>
+        <th>Date</th>
+        <th>CheapestPrice</th>
+        <th>Hotel</th>
+      </tr>
+    """
+    for travelPrice in travelPrices:
+        res += f"""
+        <tr>
+          <td>{travelPrice['Airport']}</td>
+          <td>{travelPrice['Duration']}</td>
+          <td>{travelPrice['Date'][0:10]}</td>
+          <td>{travelPrice['CheapestPrice']}</td>
+          <td>{travelPrice['Hotel']}</td>
+        </tr>
+        """
+    res += """
+    </table>
+    </body>
+    </html>
+    """
     return res
 
 def SortPrices(travelPrices):
