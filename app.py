@@ -40,7 +40,7 @@ def getPrices(year, travelDuration, airport, maxPrice, persons):
 
   for hotelName,hotelId in hotels.items():
     for month in [str(i).zfill(2) for i in range(1, 13)]:
-      url = f"https://www.apollorejser.dk/PriceCalendar/Calendar?ProductCategoryCode=FlightAndHotel&DepartureAirportCode={airport}&DepartureDate={year}-{month}-01&DurationGroupCode={travelDuration}&CatalogueItemId={hotelId}&DepartureDateRange=31&PaxAges={paxAges}"
+      url = f"https://www.apollorejser.dk/PriceCalendar/Calendar?ProductCategoryCode=FlightAndHotel&DepartureAirportCode={airport}&DepartureDate={year}-{month}-01&Duration={travelDuration}&CatalogueItemId={hotelId}&DepartureDateRange=31&PaxAges={paxAges}"
       r = requests.get(url = url) 
       if(r.status_code == 200):
         data = r.json()
