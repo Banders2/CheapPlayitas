@@ -14,13 +14,17 @@ def getPlayitasPrices():
     if oneMax != 0:
         prices += getPrices("2022", "7", "CPH", oneMax, persons)
         prices += getPrices("2022", "7", "BLL", oneMax, persons)
+        prices += getPrices("2022", "7", "AAL", oneMax, persons)
         prices += getPrices("2023", "7", "CPH", oneMax, persons)
         prices += getPrices("2023", "7", "BLL", oneMax, persons)
+        prices += getPrices("2023", "7", "AAL", oneMax, persons)
     if twoMax != 0:
         prices += getPrices("2022", "14", "CPH", twoMax, persons)
         prices += getPrices("2022", "14", "BLL", twoMax, persons)
+        prices += getPrices("2022", "14", "AAL", twoMax, persons)
         prices += getPrices("2023", "14", "CPH", twoMax, persons)
         prices += getPrices("2023", "14", "BLL", twoMax, persons)
+        prices += getPrices("2023", "14", "AAL", twoMax, persons)
 
     sortedPrices = SortPrices(prices)
     res = PrettyHtmlPrices(sortedPrices)
