@@ -1,37 +1,43 @@
 from flask import Flask, request
-from markupsafe import re
 import requests
+import requests_cache
+from datetime import timedelta
 
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def getPlayitasPrices():
+    requests_cache.install_cache('demo_cache', expire_after=timedelta(hours=1))
     args = request.args
-    oneMax = args.get("MaxPrice7", default=0, type=int)
-    twoMax = args.get("MaxPrice14", default=0, type=int)
+    oneMax = args.get("MaxPrice7", default=None, type=int)
+    twoMax = args.get("MaxPrice14", default=None, type=int)
     persons = args.get("persons", default=2, type=int)
-    prices = []
-    if oneMax != 0:
-        prices += getPrices("2022", "7", "CPH", oneMax, persons)
-        prices += getPrices("2022", "7", "BLL", oneMax, persons)
-        prices += getPrices("2022", "7", "AAL", oneMax, persons)
-        prices += getPrices("2023", "7", "CPH", oneMax, persons)
-        prices += getPrices("2023", "7", "BLL", oneMax, persons)
-        prices += getPrices("2023", "7", "AAL", oneMax, persons)
-    if twoMax != 0:
-        prices += getPrices("2022", "14", "CPH", twoMax, persons)
-        prices += getPrices("2022", "14", "BLL", twoMax, persons)
-        prices += getPrices("2022", "14", "AAL", twoMax, persons)
-        prices += getPrices("2023", "14", "CPH", twoMax, persons)
-        prices += getPrices("2023", "14", "BLL", twoMax, persons)
-        prices += getPrices("2023", "14", "AAL", twoMax, persons)
+    sortbydate = args.get("sortbydate", default=False, type=bool)
 
-    sortedPrices = SortPrices(prices)
+    years = []
+    years.append("2022") if args.get("year2022", default=False, type=bool) else False
+    years.append("2023") if args.get("year2023", default=False, type=bool) else False
+
+    airports = []
+    airports.append("CPH") if args.get("airportcph", default=False, type=bool) else False
+    airports.append("BLL") if args.get("airportbll", default=False, type=bool) else False
+    airports.append("AAL") if args.get("airportaal", default=False, type=bool) else False
+    airports.append("AAR") if args.get("airportaar", default=False, type=bool) else False
+
+    prices = []
+    for year in years:
+      for airport in airports:
+        prices += getPrices(year, "7", airport, oneMax, persons) if oneMax != None else ""
+        prices += getPrices(year, "14", airport, twoMax, persons) if twoMax != None else ""
+
+    sortedPrices = SortPrices(prices, sortbydate)
     res = PrettyHtmlPrices(sortedPrices)
     return res
 
-def SortPrices(travelPrices):
+def SortPrices(travelPrices, sortbydate):
   travelPrices.sort(key=lambda x: (x.get('Duration'), x.get('CheapestPrice')))
+  if(sortbydate):
+    travelPrices.sort(key=lambda x: (x.get('Duration'), x.get('Date')))
   return travelPrices
 
 def getPrices(year, travelDuration, airport, maxPrice, persons):
@@ -72,39 +78,65 @@ def removeOverLimitPriceTravels(data, maxPrice):
 
 
 def PrettyHtmlPrices(travelPrices):
-    if len(travelPrices) == 0:
-      return "No interesting travels"
-    res = """
+    args = request.args
+    res = f'''
     <html>
     <head>
     <style>
-    table {
+    table {{
       font-family: arial, sans-serif;
       border-collapse: collapse;
       width: 100%;
-    }
+    }}
 
-    td, th {
+    td, th {{
       border: 1px solid #dddddd;
       text-align: left;
       padding: 8px;
-    }
+    }}
 
-    tr:nth-child(even) {
+    tr:nth-child(even) {{
       background-color: #dddddd;
-    }
+    }}
+
+    input[type=number] {{
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      box-sizing: border-box;
+    }}
+
+    input[type=number]:focus {{
+      border: 3px solid #555;
+    }}
+
     </style>
     </head>
     <body>
+
+    <form action="/">
+      <input type="number" name="MaxPrice7" value="{args.get("MaxPrice7", default=None, type=int)}" placeholder="Max Pris 7 Dage"><br>
+      <input type="number" name="MaxPrice14" value="{args.get("MaxPrice14", default=None, type=int)}" placeholder="Max Pris 14 Dage"><br>
+      <input type="number" name="persons" value="{args.get("persons", default=None, type=int)}" placeholder="Antal Personer (Default: 2)"><br>
+      <input type="checkbox" value="true" {"checked" if args.get("year2022", default=False, type=bool) else ""} name="year2022"><label>2022</label> 
+      <input type="checkbox" value="true" {"checked" if args.get("year2023", default=False, type=bool) else ""} name="year2023"><label>2023</label> <br>
+      <input type="checkbox" value="true" {"checked" if args.get("airportcph", default=False, type=bool) else ""} name="airportcph"><label>CPH</label>
+      <input type="checkbox" value="true" {"checked" if args.get("airportbll", default=False, type=bool) else ""} name="airportbll"><label>BLL</label>
+      <input type="checkbox" value="true" {"checked" if args.get("airportaal", default=False, type=bool) else ""} name="airportaal"><label>ALL</label>
+      <input type="checkbox" value="true" {"checked" if args.get("airportaar", default=False, type=bool) else ""} name="airportaar"><label>AAR</label> <br> 
+      <input type="checkbox" value="true" {"checked" if args.get("sortbydate", default=False, type=bool) else ""} name="sortbydate"><label>Sorter på Dato</label> <br> 
+      <input type="submit" value="Submit">
+    </form>
+
     <table>
       <tr>
-        <th>Airport</th>
-        <th>Duration</th>
-        <th>Date</th>
-        <th>CheapestPrice</th>
+        <th>Lufthavn</th>
+        <th>Varighed</th>
+        <th>Dato</th>
+        <th>Pris</th>
         <th>Hotel</th>
       </tr>
-    """
+    '''
     for travelPrice in travelPrices:
         res += f"""
         <tr>
@@ -125,6 +157,3 @@ def PrettyHtmlPrices(travelPrices):
 
 if __name__ == '__main__':
     app.run()
-
-
-
