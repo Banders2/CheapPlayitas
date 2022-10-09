@@ -110,169 +110,29 @@ def PrettyHtmlPrices(travelPrices):
       border: 3px solid #555;
     }}
 
-    body{{
-        padding:0 20px;
-    }}
-    .big{{
-        font-size: 50px;
-    }}
-
-    /* CSS below will force radio/checkbox size be same as font size */
-    label{{
-        position: relative;
-        line-height: 1.4;
-    }}
-    /* radio */
-    input[type=radio]{{
-        width: 1em;
-        font-size: inherit;
-        margin: 0;
-        transform: translateX(-9999px);
-    }}
-    input[type=radio] + label:before{{
-        position: absolute;
-        content: '';
-        left: -1.3em;
-        top: 0;
-        width: 1em;
-        height: 1em;
-        margin: 0;
-        border:none;
-        border-radius: 50%;
-        background-color: #bbbbbb;
-    }}
-    input[type=radio] + label:after{{
-        position: absolute;
-        content: '';
-        left: -1.3em;
-        top: 0;
-        width: 1em;
-        height: 1em;
-        margin: 0;
-        border: none;
-        background-color: white;
-        border-radius: 50%;
-        transform: scale(0.8);
-    }}
-    /*checked*/
-    input[type=radio]:checked + label:before{{
-        position:absolute;
-        content:'';
-        left: -1.3em;
-        top: 0;
-        width: 1em;
-        height: 1em;
-        margin: 0;
-        border: none;
-        background-color: #3b88fd;
-    }}
-    input[type=radio]:checked + label:after{{
-        position: absolute;
-        content: '';
-        left: -1.3em;
-        top: 0;
-        width: 1em;
-        height: 1em;
-        margin: 0;
-        border: none;
-        background-color: white;
-        border-radius: 50%;
-        transform: scale(0.3);
-    }}
-    /*focused*/
-    input[type=radio]:focus + label:before{{
-        border: 0.2em solid #8eb9fb;
-        margin-top: -0.2em;
-        margin-left: -0.2em;
-        box-shadow: 0 0 0.3em #3b88fd;
-    }}
-
-
-    /*checkbox/*/
-    input[type=checkbox]{{
-        width: 1em;
-        font-size: inherit;
-        margin: 0;
-        transform: translateX(-9999px);
-    }}
-    input[type=checkbox] + label:before{{
-        position: absolute;
-        content: '';
-        left: -1.3em;
-        top: 0;
-        width: 1em;
-        height: 1em;
-        margin: 0;
-        border:none;
-        border-radius: 10%;
-        background-color: #bbbbbb;
-    }}
-    input[type=checkbox] + label:after{{
-        position: absolute;
-        content: '';
-        left: -1.3em;
-        top: 0;
-        width: 1em;
-        height: 1em;
-        margin: 0;
-        border: none;
-        background-color: white;
-        border-radius: 10%;
-        transform: scale(0.8);
-    }}
-    /*checked*/
-    input[type=checkbox]:checked + label:before{{
-        position:absolute;
-        content:'';
-        left: -1.3em;
-        top: 0;
-        width: 1em;
-        height: 1em;
-        margin: 0;
-        border: none;
-        background-color: #3b88fd;
-    }}
-    input[type=checkbox]:checked + label:after{{
-        position: absolute;
-        content: "\2713";
-        left: -1.3em;
-        top: 0;
-        width: 1em;
-        height: 1em;
-        margin: 0;
-        border: none;
-        background-color: #3b88fd;
-        border-radius: 10%;
-        color: white;
-        text-align: center;
-        line-height: 1;
-    }}
-    /*focused*/
-    input[type=checkbox]:focus + label:before{{
-        border: 0.1em solid #8eb9fb;
-        margin-top: -0.1em;
-        margin-left: -0.1em;
-        box-shadow: 0 0 0.2em #3b88fd;
+    input[type=checkbox] {{
+      width: 40px;
+      height: 40px;
     }}
 
     </style>
     </head>
     <body>
-    <div class="big">
-      <form action="/">
-        <input type="number" name="MaxPrice7" value="{args.get("MaxPrice7", default=None, type=int)}" placeholder="Max Pris 7 Dage"><br>
-        <input type="number" name="MaxPrice14" value="{args.get("MaxPrice14", default=None, type=int)}" placeholder="Max Pris 14 Dage"><br>
-        <input type="number" name="persons" value="{args.get("persons", default=None, type=int)}" placeholder="Antal Personer (Default: 2)"><br>
-        <input type="checkbox" value="true" {"checked" if args.get("year2022", default=False, type=bool) else ""} name="year2022"><label>2022</label> 
-        <input type="checkbox" value="true" {"checked" if args.get("year2023", default=False, type=bool) else ""} name="year2023"><label>2023</label> <br><br> 
-        <input type="checkbox" value="true" {"checked" if args.get("airportcph", default=False, type=bool) else ""} name="airportcph"><label>CPH</label>
-        <input type="checkbox" value="true" {"checked" if args.get("airportbll", default=False, type=bool) else ""} name="airportbll"><label>BLL</label>
-        <input type="checkbox" value="true" {"checked" if args.get("airportaal", default=False, type=bool) else ""} name="airportaal"><label>ALL</label>
-        <input type="checkbox" value="true" {"checked" if args.get("airportaar", default=False, type=bool) else ""} name="airportaar"><label>AAR</label> <br><br> 
-        <input type="checkbox" value="true" {"checked" if args.get("sortbydate", default=False, type=bool) else ""} name="sortbydate"><label>Sorter på Dato</label> <br><br> 
-        <input type="submit" value="Submit">
-      </form>
-    </div>
+
+    <form action="/">
+      <input type="number" name="MaxPrice7" value="{args.get("MaxPrice7", default=None, type=int)}" placeholder="Max Pris 7 Dage"><br>
+      <input type="number" name="MaxPrice14" value="{args.get("MaxPrice14", default=None, type=int)}" placeholder="Max Pris 14 Dage"><br>
+      <input type="number" name="persons" value="{args.get("persons", default=None, type=int)}" placeholder="Antal Personer (Default: 2)"><br>
+      <input type="checkbox" value="true" {"checked" if args.get("year2022", default=False, type=bool) else ""} name="year2022"><label>2022</label> 
+      <input type="checkbox" value="true" {"checked" if args.get("year2023", default=False, type=bool) else ""} name="year2023"><label>2023</label> <br><br> 
+      <input type="checkbox" value="true" {"checked" if args.get("airportcph", default=False, type=bool) else ""} name="airportcph"><label>CPH</label>
+      <input type="checkbox" value="true" {"checked" if args.get("airportbll", default=False, type=bool) else ""} name="airportbll"><label>BLL</label>
+      <input type="checkbox" value="true" {"checked" if args.get("airportaal", default=False, type=bool) else ""} name="airportaal"><label>ALL</label>
+      <input type="checkbox" value="true" {"checked" if args.get("airportaar", default=False, type=bool) else ""} name="airportaar"><label>AAR</label> <br><br> 
+      <input type="checkbox" value="true" {"checked" if args.get("sortbydate", default=False, type=bool) else ""} name="sortbydate"><label>Sorter på Dato</label> <br><br> 
+      <input type="submit" value="Submit">
+    </form>
+
     <table>
       <tr>
         <th>Lufthavn</th>
