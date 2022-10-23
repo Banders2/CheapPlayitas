@@ -7,7 +7,8 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def getPlayitasPrices():
-    requests_cache.install_cache('demo_cache', expire_after=timedelta(hours=1))
+    requests_cache.install_cache('cheapPlayitas', expire_after=3600, )
+
     args = request.args
     oneMax = args.get("MaxPrice7", default=None, type=int)
     twoMax = args.get("MaxPrice14", default=None, type=int)
@@ -52,6 +53,7 @@ def getPrices(year, travelDuration, airport, maxPrice, persons):
     for month in [str(i).zfill(2) for i in range(1, 13)]:
       url = f"https://www.apollorejser.dk/PriceCalendar/Calendar?ProductCategoryCode=FlightAndHotel&DepartureAirportCode={airport}&DepartureDate={year}-{month}-01&Duration={travelDuration}&CatalogueItemId={hotelId}&DepartureDateRange=31&PaxAges={paxAges}"
       r = requests.get(url = url) 
+      #print(r.from_cache)
       if(r.status_code == 200):
         data = r.json()
         data = removeSoldOutTravels(data)
