@@ -1,7 +1,6 @@
 from flask import Flask, request
 import requests
 import requests_cache
-from datetime import timedelta
 
 app = Flask(__name__)
 
@@ -50,19 +49,24 @@ def getPrices(year, travelDuration, airport, maxPrice, persons):
   paxAges = createPaxAgesString(persons)
 
   for hotelName,hotelId in hotels.items():
+    if(hotelName == "Annexe"):
+      hotelUrl = "playitas-annexe"
+    elif(hotelName == "Playitas Resort"):
+      hotelUrl = "playitas-resort"
     for month in [str(i).zfill(2) for i in range(1, 13)]:
-      url = f"https://www.apollorejser.dk/PriceCalendar/Calendar?ProductCategoryCode=FlightAndHotel&DepartureAirportCode={airport}&DepartureDate={year}-{month}-01&Duration={travelDuration}&CatalogueItemId={hotelId}&DepartureDateRange=31&PaxAges={paxAges}"
-      r = requests.get(url = url) 
-      #print(r.from_cache)
+      url = f"https://www.apollorejser.dk/PriceCalendar/Calendar?ProductCategoryCode=FlightAndHotel&DepartureDate={year}-{month}-01&departureAirportCode={airport}&duration={travelDuration}&catalogueItemId={hotelId}&departureDateRange=31&paxAges={paxAges}"
+      r = requests.get(url = url)
+      # print(r.from_cache)
       if(r.status_code == 200):
         data = r.json()
         data = removeSoldOutTravels(data)
         data = removeOverLimitPriceTravels(data, maxPrice)
         if(len(data) > 0):
-          for travelObj in data: 
+          for travelObj in data:
             travelObj['Airport'] = airport
             travelObj['Duration'] = travelDuration
             travelObj['Hotel'] = hotelName
+            travelObj['Link'] = f'https://www.apollorejser.dk/spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/{hotelUrl}?departureDate={travelObj["Date"][0:10]}&departureAirportCode={airport}&duration={travelDuration}&catalogueItemId={hotelId}&departureDateRange=31&paxAges={paxAges}'
           travelPrices += data
   return travelPrices
 
@@ -142,6 +146,7 @@ def PrettyHtmlPrices(travelPrices):
         <th>Dato</th>
         <th>Pris</th>
         <th>Hotel</th>
+        <th>Link</th>
       </tr>
     '''
     for travelPrice in travelPrices:
@@ -152,6 +157,7 @@ def PrettyHtmlPrices(travelPrices):
           <td>{travelPrice['Date'][0:10]}</td>
           <td>{travelPrice['CheapestPrice']}</td>
           <td>{travelPrice['Hotel']}</td>
+          <td><a href="{travelPrice['Link']}">Link</a></td>
         </tr>
         """
     res += """
