@@ -23,13 +23,18 @@ def getPlayitasPrices():
     airports.append("AAL") if args.get("airportaal", default=False, type=bool) else False
     airports.append("AAR") if args.get("airportaar", default=False, type=bool) else False
 
+    hotels = getHotelList()
+    selectedHotels: List[Hotel] = []
+    for hotel in hotels:
+      selectedHotels.append(hotel) if args.get(hotel.shortName, default=False, type=bool) else False
+
     prices = []
     for airport in airports:
-      prices += getPrices( "7", airport, oneMax, persons) if oneMax != None else ""
-      prices += getPrices( "14", airport, twoMax, persons) if twoMax != None else ""
+      prices += getPrices( "7", selectedHotels, airport, oneMax, persons) if oneMax != None else ""
+      prices += getPrices( "14", selectedHotels, airport, twoMax, persons) if twoMax != None else ""
 
     sortedPrices = SortPrices(prices, sortbydate)
-    res = PrettyHtmlPrices(sortedPrices)
+    res = PrettyHtmlPrices(sortedPrices, hotels)
     return res
 
 def SortPrices(travelPrices, sortbydate):
@@ -38,16 +43,12 @@ def SortPrices(travelPrices, sortbydate):
     travelPrices.sort(key=lambda x: (x.get('Duration'), x.get('Date')))
   return travelPrices
 
-def getPrices(travelDuration, airport, maxPrice, persons):
+def getPrices(travelDuration, hotels, airport, maxPrice, persons):
   date = datetime.datetime.now().date()
   currentMonth = int(date.strftime("%m"))
   currentYear = int(date.strftime("%Y"))
 
   travelPrices = []
-  # hotels = {
-  #   "Annexe":"530116",
-  #   "Playitas Resort": "160759"
-  #   }
   paxAges = createPaxAgesString(persons)
 
   date = datetime.datetime.now().date()
@@ -59,7 +60,6 @@ def getPrices(travelDuration, airport, maxPrice, persons):
     monthStart = 1
     if year == currentYear:
       monthStart = currentMonth
-    hotels = getHotelList()
     for hotel in hotels:
       for month in [str(i).zfill(2) for i in range(monthStart, 13)]:
         url = f"https://www.apollorejser.dk/PriceCalendar/Calendar?ProductCategoryCode=FlightAndHotel&DepartureDate={year}-{month}-01&departureAirportCode={airport}&duration={travelDuration}&catalogueItemId={hotel.hotelId}&departureDateRange=31&paxAges={paxAges}"
@@ -92,11 +92,13 @@ def removeOverLimitPriceTravels(data, maxPrice):
 
 
 class Hotel:
+  shortName: str
   displayName: str
   hotelId: str
   hotelUrl: str
 
-  def __init__(self, displayName: str, hotelId: str, hotelUrl: str):
+  def __init__(self, shortName: str, displayName: str, hotelId: str, hotelUrl: str):
+    self.shortName = shortName
     self.displayName = displayName
     self.hotelId = hotelId
     self.hotelUrl = hotelUrl
@@ -104,16 +106,18 @@ class Hotel:
 
 def getHotelList() -> List[Hotel]:
   hotels = []
-  hotels.append(Hotel("Porto Myrina (Grækenland)", "158862", "graekenland/limnos/hoteller/porto-myrina---powered-by-playitas"))
-  hotels.append(Hotel("Playitas Annexe (Fuerteventura)", "530116", "spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/playitas-annexe"))
-  hotels.append(Hotel("Playitas Resort (Fuerteventura)", "160759", "spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/playitas-resort"))
+  hotels.append(Hotel("PortoMyrina","Porto Myrina (Grækenland)", "158862", "graekenland/limnos/hoteller/porto-myrina---powered-by-playitas"))
+  hotels.append(Hotel("PlayitasAnnexe", "Playitas Annexe (Fuerteventura)", "530116", "spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/playitas-annexe"))
+  hotels.append(Hotel("PlayitasResort", "Playitas Resort (Fuerteventura)", "160759", "spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/playitas-resort"))
 
   return hotels
 
+# def getAirports() -> List[str]:
+#   airports = ["cph", "bll", "aal", "aar"]
 
 
 
-def PrettyHtmlPrices(travelPrices):
+def PrettyHtmlPrices(travelPrices: list, hotels: List[Hotel]):
     args = request.args
     res = f'''
     <html>
@@ -159,6 +163,15 @@ def PrettyHtmlPrices(travelPrices):
       <input type="number" name="MaxPrice7" value="{args.get("MaxPrice7", default=None, type=int)}" placeholder="Max Pris 7 Dage"><br>
       <input type="number" name="MaxPrice14" value="{args.get("MaxPrice14", default=None, type=int)}" placeholder="Max Pris 14 Dage"><br>
       <input type="number" name="persons" value="{args.get("persons", default=None, type=int)}" placeholder="Antal Personer (Default: 2)"><br>
+      <H2>Hoteller</H2>
+      '''
+    for hotel in hotels:
+        res += f'''
+          <input type="checkbox" value="true" {"checked" if args.get(f'{hotel.shortName}', default=False, type=bool) else ""} name="{hotel.shortName}"><label>{hotel.displayName}</label><br> 
+          '''
+    res += f'''
+      <br>
+      <H2>Lufthavne</H2>
       <input type="checkbox" value="true" {"checked" if args.get("airportcph", default=False, type=bool) else ""} name="airportcph"><label>CPH</label>
       <input type="checkbox" value="true" {"checked" if args.get("airportbll", default=False, type=bool) else ""} name="airportbll"><label>BLL</label>
       <input type="checkbox" value="true" {"checked" if args.get("airportaal", default=False, type=bool) else ""} name="airportaal"><label>ALL</label>
