@@ -1,3 +1,4 @@
+import datetime
 from flask import Flask, request
 import requests
 import requests_cache
@@ -14,10 +15,6 @@ def getPlayitasPrices():
     persons = args.get("persons", default=2, type=int)
     sortbydate = args.get("sortbydate", default=False, type=bool)
 
-    years = []
-    years.append("2022") if args.get("year2022", default=False, type=bool) else False
-    years.append("2023") if args.get("year2023", default=False, type=bool) else False
-
     airports = []
     airports.append("CPH") if args.get("airportcph", default=False, type=bool) else False
     airports.append("BLL") if args.get("airportbll", default=False, type=bool) else False
@@ -25,10 +22,9 @@ def getPlayitasPrices():
     airports.append("AAR") if args.get("airportaar", default=False, type=bool) else False
 
     prices = []
-    for year in years:
-      for airport in airports:
-        prices += getPrices(year, "7", airport, oneMax, persons) if oneMax != None else ""
-        prices += getPrices(year, "14", airport, twoMax, persons) if twoMax != None else ""
+    for airport in airports:
+      prices += getPrices( "7", airport, oneMax, persons) if oneMax != None else ""
+      prices += getPrices( "14", airport, twoMax, persons) if twoMax != None else ""
 
     sortedPrices = SortPrices(prices, sortbydate)
     res = PrettyHtmlPrices(sortedPrices)
@@ -40,7 +36,11 @@ def SortPrices(travelPrices, sortbydate):
     travelPrices.sort(key=lambda x: (x.get('Duration'), x.get('Date')))
   return travelPrices
 
-def getPrices(year, travelDuration, airport, maxPrice, persons):
+def getPrices(travelDuration, airport, maxPrice, persons):
+  date = datetime.datetime.now().date()
+  currentMonth = int(date.strftime("%m"))
+  currentYear = int(date.strftime("%Y"))
+
   travelPrices = []
   hotels = {
     "Annexe":"530116",
@@ -48,26 +48,35 @@ def getPrices(year, travelDuration, airport, maxPrice, persons):
     }
   paxAges = createPaxAgesString(persons)
 
-  for hotelName,hotelId in hotels.items():
-    if(hotelName == "Annexe"):
-      hotelUrl = "playitas-annexe"
-    elif(hotelName == "Playitas Resort"):
-      hotelUrl = "playitas-resort"
-    for month in [str(i).zfill(2) for i in range(1, 13)]:
-      url = f"https://www.apollorejser.dk/PriceCalendar/Calendar?ProductCategoryCode=FlightAndHotel&DepartureDate={year}-{month}-01&departureAirportCode={airport}&duration={travelDuration}&catalogueItemId={hotelId}&departureDateRange=31&paxAges={paxAges}"
-      r = requests.get(url = url)
-      # print(r.from_cache)
-      if(r.status_code == 200):
-        data = r.json()
-        data = removeSoldOutTravels(data)
-        data = removeOverLimitPriceTravels(data, maxPrice)
-        if(len(data) > 0):
-          for travelObj in data:
-            travelObj['Airport'] = airport
-            travelObj['Duration'] = travelDuration
-            travelObj['Hotel'] = hotelName
-            travelObj['Link'] = f'https://www.apollorejser.dk/spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/{hotelUrl}?departureDate={travelObj["Date"][0:10]}&departureAirportCode={airport}&duration={travelDuration}&catalogueItemId={hotelId}&departureDateRange=31&paxAges={paxAges}'
-          travelPrices += data
+  date = datetime.datetime.now().date()
+  currentYear = int(date.strftime("%Y"))
+  currentMonth = int(date.strftime("%m"))
+  years = [currentYear, currentYear+1]
+
+  for year in years:
+    monthStart = 1
+    if year == currentYear:
+      monthStart = currentMonth
+    for hotelName,hotelId in hotels.items():
+      if(hotelName == "Annexe"):
+        hotelUrl = "playitas-annexe"
+      elif(hotelName == "Playitas Resort"):
+        hotelUrl = "playitas-resort"
+      for month in [str(i).zfill(2) for i in range(monthStart, 13)]:
+        url = f"https://www.apollorejser.dk/PriceCalendar/Calendar?ProductCategoryCode=FlightAndHotel&DepartureDate={year}-{month}-01&departureAirportCode={airport}&duration={travelDuration}&catalogueItemId={hotelId}&departureDateRange=31&paxAges={paxAges}"
+        r = requests.get(url = url)
+        # print(r.from_cache)
+        if(r.status_code == 200):
+          data = r.json()
+          data = removeSoldOutTravels(data)
+          data = removeOverLimitPriceTravels(data, maxPrice)
+          if(len(data) > 0):
+            for travelObj in data:
+              travelObj['Airport'] = airport
+              travelObj['Duration'] = travelDuration
+              travelObj['Hotel'] = hotelName
+              travelObj['Link'] = f'https://www.apollorejser.dk/spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/{hotelUrl}?departureDate={travelObj["Date"][0:10]}&departureAirportCode={airport}&duration={travelDuration}&catalogueItemId={hotelId}&departureDateRange=31&paxAges={paxAges}'
+            travelPrices += data
   return travelPrices
 
 def createPaxAgesString(persons):
@@ -129,8 +138,6 @@ def PrettyHtmlPrices(travelPrices):
       <input type="number" name="MaxPrice7" value="{args.get("MaxPrice7", default=None, type=int)}" placeholder="Max Pris 7 Dage"><br>
       <input type="number" name="MaxPrice14" value="{args.get("MaxPrice14", default=None, type=int)}" placeholder="Max Pris 14 Dage"><br>
       <input type="number" name="persons" value="{args.get("persons", default=None, type=int)}" placeholder="Antal Personer (Default: 2)"><br>
-      <input type="checkbox" value="true" {"checked" if args.get("year2022", default=False, type=bool) else ""} name="year2022"><label>2022</label> 
-      <input type="checkbox" value="true" {"checked" if args.get("year2023", default=False, type=bool) else ""} name="year2023"><label>2023</label> <br><br> 
       <input type="checkbox" value="true" {"checked" if args.get("airportcph", default=False, type=bool) else ""} name="airportcph"><label>CPH</label>
       <input type="checkbox" value="true" {"checked" if args.get("airportbll", default=False, type=bool) else ""} name="airportbll"><label>BLL</label>
       <input type="checkbox" value="true" {"checked" if args.get("airportaal", default=False, type=bool) else ""} name="airportaal"><label>ALL</label>
