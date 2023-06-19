@@ -2,6 +2,8 @@ import datetime
 from flask import Flask, request
 import requests
 import requests_cache
+from typing import List
+
 
 app = Flask(__name__)
 
@@ -42,10 +44,10 @@ def getPrices(travelDuration, airport, maxPrice, persons):
   currentYear = int(date.strftime("%Y"))
 
   travelPrices = []
-  hotels = {
-    "Annexe":"530116",
-    "Playitas Resort": "160759"
-    }
+  # hotels = {
+  #   "Annexe":"530116",
+  #   "Playitas Resort": "160759"
+  #   }
   paxAges = createPaxAgesString(persons)
 
   date = datetime.datetime.now().date()
@@ -57,13 +59,10 @@ def getPrices(travelDuration, airport, maxPrice, persons):
     monthStart = 1
     if year == currentYear:
       monthStart = currentMonth
-    for hotelName,hotelId in hotels.items():
-      if(hotelName == "Annexe"):
-        hotelUrl = "playitas-annexe"
-      elif(hotelName == "Playitas Resort"):
-        hotelUrl = "playitas-resort"
+    hotels = getHotelList()
+    for hotel in hotels:
       for month in [str(i).zfill(2) for i in range(monthStart, 13)]:
-        url = f"https://www.apollorejser.dk/PriceCalendar/Calendar?ProductCategoryCode=FlightAndHotel&DepartureDate={year}-{month}-01&departureAirportCode={airport}&duration={travelDuration}&catalogueItemId={hotelId}&departureDateRange=31&paxAges={paxAges}"
+        url = f"https://www.apollorejser.dk/PriceCalendar/Calendar?ProductCategoryCode=FlightAndHotel&DepartureDate={year}-{month}-01&departureAirportCode={airport}&duration={travelDuration}&catalogueItemId={hotel.hotelId}&departureDateRange=31&paxAges={paxAges}"
         r = requests.get(url = url)
         # print(r.from_cache)
         if(r.status_code == 200):
@@ -74,8 +73,8 @@ def getPrices(travelDuration, airport, maxPrice, persons):
             for travelObj in data:
               travelObj['Airport'] = airport
               travelObj['Duration'] = travelDuration
-              travelObj['Hotel'] = hotelName
-              travelObj['Link'] = f'https://www.apollorejser.dk/spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/{hotelUrl}?departureDate={travelObj["Date"][0:10]}&departureAirportCode={airport}&duration={travelDuration}&catalogueItemId={hotelId}&departureDateRange=31&paxAges={paxAges}'
+              travelObj['Hotel'] = hotel.displayName
+              travelObj['Link'] = f'https://www.apollorejser.dk/{hotel.hotelUrl}?departureDate={travelObj["Date"][0:10]}&departureAirportCode={airport}&duration={travelDuration}&catalogueItemId={hotel.hotelId}&departureDateRange=31&paxAges={paxAges}'
             travelPrices += data
   return travelPrices
 
@@ -90,6 +89,28 @@ def removeSoldOutTravels(data):
 
 def removeOverLimitPriceTravels(data, maxPrice):
   return list(filter(lambda travelPrice: travelPrice["CheapestPrice"] <= maxPrice, data))
+
+
+class Hotel:
+  displayName: str
+  hotelId: str
+  hotelUrl: str
+
+  def __init__(self, displayName: str, hotelId: str, hotelUrl: str):
+    self.displayName = displayName
+    self.hotelId = hotelId
+    self.hotelUrl = hotelUrl
+
+
+def getHotelList() -> List[Hotel]:
+  hotels = []
+  hotels.append(Hotel("Porto Myrina (Grækenland)", "158862", "graekenland/limnos/hoteller/porto-myrina---powered-by-playitas"))
+  hotels.append(Hotel("Playitas Annexe (Fuerteventura)", "530116", "spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/playitas-annexe"))
+  hotels.append(Hotel("Playitas Resort (Fuerteventura)", "160759", "spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/playitas-resort"))
+
+  return hotels
+
+
 
 
 def PrettyHtmlPrices(travelPrices):
