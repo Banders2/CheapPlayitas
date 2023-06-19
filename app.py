@@ -106,15 +106,20 @@ class Hotel:
 
 def getHotelList() -> List[Hotel]:
   hotels = []
-  hotels.append(Hotel("PortoMyrina","Porto Myrina (Grækenland)", "158862", "graekenland/limnos/hoteller/porto-myrina---powered-by-playitas"))
-  hotels.append(Hotel("PlayitasAnnexe", "Playitas Annexe (Fuerteventura)", "530116", "spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/playitas-annexe"))
-  hotels.append(Hotel("PlayitasResort", "Playitas Resort (Fuerteventura)", "160759", "spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/playitas-resort"))
+  hotels.append(Hotel("PlayitasAnnexe", "Playitas Annexe (Fuerteventura - Spanien)", "530116", "spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/playitas-annexe"))
+  hotels.append(Hotel("PlayitasResort", "Playitas Resort (Fuerteventura - Spanien)", "160759", "spanien/de-kanariske-oer/fuerteventura/playitas-resort/hoteller/playitas-resort"))
+  hotels.append(Hotel("LaPared", "La Pared (Fuerteventura - Spanien)", "537065", "spanien/de-kanariske-oer/fuerteventura/costa-calma-tarajalejo-og-la-pared/hoteller/la-pared---powered-by-playitas"))
+
+  hotels.append(Hotel("PortoMyrina","Porto Myrina (Limnos - Grækenland)", "158862", "graekenland/limnos/hoteller/porto-myrina---powered-by-playitas"))
+  hotels.append(Hotel("Levante","Levante (Rhodos - Grækenland)", "165291", "graekenland/rhodos/afandou-og-kolymbia/hoteller/levante---powered-by-playitas"))
+  hotels.append(Hotel("SivotaRetreat","Sivota Retreat (Grækenland)", "544616", "graekenland/sivota/hoteller/sivota-retreat---powered-by-playitas"))
+  hotels.append(Hotel("CavoSpada","Cavo Spada Deluxe & Spa Giannoulis (Kreta - Grækenland)", "542262", "graekenland/kreta/kolymbari/hoteller/cavo-spada-deluxe-og-spa-giannoulis-hotels"))
+
+  hotels.append(Hotel("AquaVista","Aqua Vista (Egypten)", "548420", "egypten/hurghada/hoteller/aqua-vista---powered-by-playitas"))
+
+  hotels.append(Hotel("Vidamar Resorts","Vidamar Resorts (Madeira - Portugal)", "496953", "portugal/madeira/funchal/hoteller/vidamar-resorts-madeira---vinter"))
 
   return hotels
-
-# def getAirports() -> List[str]:
-#   airports = ["cph", "bll", "aal", "aar"]
-
 
 
 def PrettyHtmlPrices(travelPrices: list, hotels: List[Hotel]):
